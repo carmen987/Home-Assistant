@@ -72,3 +72,9 @@ vncpasswd
 
 Запустіть VNC-сервер:
 vncserver :1
+
+
+вмикаємо розширений режим
+встановлюємо terminal & ssh
+в терміналі виконуємо
+wget -q -O - https://install.hacs.xyz | bash -

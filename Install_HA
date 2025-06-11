@@ -64,5 +64,11 @@ gdbus introspect --system --dest io.hass.os --object-path /io/hass/os
 sudo wget -O homeassistant-supervised.deb https://github.com/home-assistant/supervised-installer/releases/latest/download/homeassistant-supervised.deb
 sudo apt install ./homeassistant-supervised.deb
 
+Встановлюємо VNC-сервер (наприклад, TigerVNC або RealVNC):
+sudo apt install tigervnc-standalone-server tigervnc-viewer
 
+Налаштуйте пароль для VNC:
+vncpasswd
 
+Запустіть VNC-сервер:
+vncserver :1

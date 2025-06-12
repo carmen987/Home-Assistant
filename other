@@ -1,0 +1,50 @@
+кольори відповідно значенню
+
+type: tile
+entity: sensor.kinderzimmer_atmospharensensor_2
+name: Temperatur
+tap_action:
+  action: navigate
+  navigation_path: /lovelace/kinderzimmer
+card_mod:
+  style: |
+    .icon {
+     {% if states(config.entity)|float(0) > 30 %}
+      --tile-color: red;
+     {% elif states(config.entity)|float(0) > 28 %}
+      --tile-color: orange;
+     {% elif states(config.entity)|float(0) > 20 %}
+      --tile-color: green;
+     {% elif states(config.entity)|float(0) > 15 %}  
+      --tile-color: blue;
+     {% else %}  
+      --tile-color: lightblue;
+     {% endif %}  
+    }
+
+або
+
+type: custom:button-card
+name: Waschmaschine
+entity: sensor.washing_machine_status
+icon: mdi:washing-machine
+state:
+  - value: arbeitet
+    color: rgb(255, 0, 0)
+  - value: fertig
+    color: rgb(50, 205, 50)
+---------------------------------------------------------------------
+колір картки
+type: tile
+entity: binary_sensor.xxxx
+name: Example
+hide_state: true
+features_position: bottom
+vertical: false
+card_mod:
+  style: |
+    ha-state-icon {
+      color:  {{ 'green' if is_state('binary_sensor.xxxx', 'on') else 'red' }};
+      }
+
+----------------------------------------------------------------------------

@@ -1,0 +1,37 @@
+description: Start a timer for 10 minutes and turn lights on when motion is detected. Turn lights off when timer finishes.
+triggers:
+  - id: motion
+    trigger: state
+    entity_id: binary_sensor.YOUR_MOTION_HERE
+    to: 'on'
+    from: 'off'
+  - id: timer
+    trigger: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.YOUR_TIMER_HERE
+conditions: []
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: motion
+        sequence:
+          - action: timer.start
+            data:
+              duration: "00:10:00"
+            target:
+              entity_id: timer.YOUR_TIMER_HERE
+          - action: light.turn_on
+            target:
+              entity_id: light.YOUR_LIGHT_HERE
+      - conditions:
+          - condition: trigger
+            id: timer
+        sequence:
+          - action: light.turn_off
+            target:
+              entity_id: light.YOUR_LIGHT_HERE
+mode: restart
+
+-----------------------------------------------------------------------------------------------------------------------------

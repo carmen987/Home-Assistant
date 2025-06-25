@@ -35,3 +35,32 @@ actions:
 mode: restart
 
 -----------------------------------------------------------------------------------------------------------------------------
+- alias: Включение света в прихожей по движению
+  trigger:
+    platform: state
+    entity_id: binary_sensor.prikhozhaia_dvizhenie_occupancy
+    from: 'off'
+    to: 'on'
+  action:
+  - service: light.turn_on
+    entity_id:
+    - light.prikhozhaia_l1
+
+- alias: Выключение света в прихожей
+  trigger:
+    platform: state
+    entity_id: binary_sensor.prikhozhaia_dvizhenie_occupancy
+    to: 'off'
+    for:
+      minutes: 2
+  condition:
+  - condition: state
+    entity_id: light.prikhozhaia_l1
+    state: 'on'
+  action:
+  - service: light.turn_off
+    entity_id:
+    - light.prikhozhaia_l1
+	
+	----------------------------------------------------------------------------
+ 

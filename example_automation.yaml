@@ -77,4 +77,239 @@ action:
       mac: D4:86:60:26:F0:E2
       broadcast_address: 192.168.88.84
 mode: single
+
+-------------------------------------------------------
+
+alias: Ванна-вкл-вент-теплпол-влажность-высокая
+description: Включить теплый пол и вентилятор
+trigger:
+  - type: humidity
+    platform: device
+    device_id: 3d380f4db9c9a9b9a92ddcb7d6ba4eea
+    entity_id: sensor.sensor_bathroom_humidity
+    domain: sensor
+    above: 55
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
+      milliseconds: 0
+condition: []
+action:
+  - type: turn_on
+    device_id: fe3b24d58f4848ea314bfee3a2847d31
+    entity_id: switch.switch_bathroom_left
+    domain: switch
+  - service: climate.set_temperature
+    target:
+      entity_id: climate.floorheat_bathroom
+    data:
+      temperature: 28
+      hvac_mode: heat
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - device_id: 0d62a807416ae25bdb4a4bfc081d121f
+    domain: climate
+    entity_id: climate.floorheat_bathroom
+    type: set_hvac_mode
+    hvac_mode: heat
+mode: single
+
+-----------------------------------------------------
+
+alias: Коридор-движение
+description: ""
+trigger:
+  - type: motion
+    platform: device
+    device_id: 0cca9328b6eef50c5aad68231b10ae27
+    entity_id: binary_sensor.motion_corridor_occupancy
+    domain: binary_sensor
+  - platform: state
+    entity_id:
+      - binary_sensor.cam4_pir_alarm_2
+    from: "off"
+    to: "on"
+condition:
+  - condition: or
+    conditions:
+      - condition: sun
+        before: sunrise
+      - condition: sun
+        after: sunset
+      - condition: time
+        before: "07:00:00"
+action:
+  - type: turn_on
+    device_id: d97eb090526f9b0cd75e829fdff60886
+    entity_id: light.bed_side_lamp
+    domain: light
+    brightness_pct: 50
+    flash: short
+mode: single
+
+-----------------------------------------------------
+
+alias: Входная-дверь-открыта-Фото-Телега-in
+description: ""
+trigger:
+  - type: opened
+    platform: device
+    device_id: 31f8b43b5a647cf4f785a905ef46003e
+    entity_id: binary_sensor.contact_hallway_contact
+    domain: binary_sensor
+condition: []
+action:
+  - service: script.send_photo_telegram
+    data:
+      url: http://hass:********@cam4.***.ru/ISAPI/Streaming/channels/101/picture
+      mess: "{{ now().strftime('%H:%M:%S') }} Входная дверь открыта"
+mode: parallel
+max: 3
+
+alias: send_photo_telegram
+variables:
+  mess: null
+sequence:
+  - service: telegram_bot.send_photo
+    data:
+      url: "{{url}}"
+      target: "-1001555******"
+      caption: "{{mess}}"
+mode: parallel
+max: 10
+-----------------------------------------------
+Изменение положения штор на угол поворота Xiaomi Cube
+alias: Cube_rotate_right
+description: ""
+trigger:
+  - platform: mqtt
+    topic: zigbee2mqtt/0x00158d0004863928
+    payload: rotate_right
+    value_template: "{{ value_json.action }}"
+condition: []
+action:
+  - service: script.cover_change_position
+    data:
+      position: >-
+        {{ [(state_attr("cover.curtain_masterbedroom_right", "current_position") -
+        (trigger.payload_json.action_angle / 2) | int), 0] | max }}
+mode: queued
+max: 2
+
+alias: cover_change_position
+variables:
+  angle: null
+sequence:
+  - service: mqtt.publish
+    data:
+      topic: zigbee2mqtt/0x00158d00058a0983/set
+      payload: "{\"position\": {{ position }}}"
+mode: queued
+max: 2
+
+--------------------------------------------
+
+Виртуальные переключатели для Google Assistant в configuration.yaml
+google_assistant:
+  project_id: ha--------16047
+  service_account: !include SERVICE_ACCOUNT.JSON
+  report_state: true
+  expose_by_default: false
+  entity_config:
+    switch.virtgatein:
+      name: 'Entrance gate'
+      expose: true
+      room: Outside
+    switch.virtgateout:
+      name: 'Exit gate'
+      expose: true
+      room: Outside
+    switch.virtgateparking:
+      name: 'Parking gate'
+      expose: true
+      room: Outside
+    switch.virtgateunderground:
+      name: 'Underground gate'
+      expose: true
+      room: Outside
+
+switch:
+  - platform: template
+    switches:
+      virtgatein:
+        friendly_name: "Виртуальный включатель шлагбаум въезд"
+        unique_id: virtgatein
+        turn_on:
+          service: switch.turn_on
+          target:
+            entity_id: switch.virtgatein
+        turn_off:
+          service: switch.turn_off
+          target:
+            entity_id: switch.virtgatein
+      virtgateout:
+        friendly_name: "Виртуальный включатель шлагбаум выезд"
+        unique_id: virtgateout
+        turn_on:
+          service: switch.turn_on
+          target:
+            entity_id: switch.virtgateout
+        turn_off:
+          service: switch.turn_off
+          target:
+            entity_id: switch.virtgateout
+      virtgateparking:
+        friendly_name: "Виртуальный включатель шлагбаум паркинг"
+        unique_id: virtgateparking
+        turn_on:
+          service: switch.turn_on
+          target:
+            entity_id: switch.virtgateparking
+        turn_off:
+          service: switch.turn_off
+          target:
+            entity_id: switch.virtgateparking
+      virtgateunderground:
+        friendly_name: "Виртуальный включатель шлагбаум подземелье"
+        unique_id: virtgateunderground
+        turn_on:
+          service: switch.turn_on
+          target:
+            entity_id: switch.virtgateunderground
+        turn_off:
+          service: switch.turn_off
+          target:
+            entity_id: switch.virtgateunderground
+
+-------------------------------------------------
+
+Автоматизация открытия шлагбаума
+alias: снаружи-шлагбаум-въезд
+description: ""
+trigger:
+  - platform: state
+    entity_id:
+      - switch.virtgatein
+    to: "on"
+    from: "off"
+condition: []
+action:
+  - device_id: 6823413313691b06fb039a8884597c62
+    domain: button
+    entity_id: button.iot_relay_41772_unlocker
+    type: press
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.virtgatein
+mode: single
+
+-----------------------------
+
+
+
  

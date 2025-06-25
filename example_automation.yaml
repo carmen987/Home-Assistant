@@ -62,5 +62,19 @@ mode: restart
     entity_id:
     - light.prikhozhaia_l1
 	
-	----------------------------------------------------------------------------
+----------------------------------------------------------------------------
+alias: Спальня-телевизор-включение
+description: Необходимо для работы кнопки включения телевизора или включения через Алису
+trigger:
+  - platform: device
+    device_id: 1d399e9a9f6cf23e13f2c412ec6e639f
+    domain: webostv
+    type: webostv.turn_on
+condition: []
+action:
+  - service: wake_on_lan.send_magic_packet
+    data:
+      mac: D4:86:60:26:F0:E2
+      broadcast_address: 192.168.88.84
+mode: single
  
